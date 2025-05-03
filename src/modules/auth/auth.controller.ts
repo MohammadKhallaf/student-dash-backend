@@ -175,7 +175,8 @@ export const changePasswordController: RequestHandler = catchAsync(
 );
 
 export const logoutController: RequestHandler = catchAsync(async (req, res) => {
-  req.logout((err) => {
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  (req as any).logout((err: { message: any }) => {
     if (err) {
       return res.status(500).json({
         success: false,

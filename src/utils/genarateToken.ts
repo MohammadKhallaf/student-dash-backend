@@ -5,7 +5,13 @@ export const genarateToken = (
   secret: string,
   expiresIn: string
 ) => {
-  return jwt.sign(jwtPayload, secret, {
-    expiresIn,
-  });
+  return jwt.sign(
+    jwtPayload,
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    secret as any,
+    {
+      expiresIn,
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    } as any
+  );
 };

@@ -98,7 +98,8 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
     errors = simplified;
   }
 
-  return res
+  res
     .status(status)
     .json({ status, success, message, errors, error, stackTrace });
+  return;
 };
