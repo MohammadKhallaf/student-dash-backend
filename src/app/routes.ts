@@ -18,8 +18,13 @@ routes.get("/health", (_req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+console.log("Validating routes...");
+
 // all Routes
 // biome-ignore lint/complexity/noForEach: <explanation>
-modulerRoutes.forEach(({ path, route }) => routes.use(path, route));
-
+// Load all routes with error handling
+modulerRoutes.forEach(({ path, route }) => {
+  console.log(`Mounting route: ${path}`); // Debug logging
+  routes.use(path, route);
+});
 export default routes;
