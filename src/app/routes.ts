@@ -5,6 +5,8 @@ import {
   Router,
 } from "express";
 import { modulerRoutes } from "../routes";
+import { userRoutes } from "../modules/user/user.routes";
+import { authRoutes } from "../modules/auth/auth.routes";
 const routes = Router();
 
 routes.get("/health", (_req: Request, res: Response, next: NextFunction) => {
@@ -20,11 +22,7 @@ routes.get("/health", (_req: Request, res: Response, next: NextFunction) => {
 
 console.log("Validating routes...");
 
-// all Routes
-// biome-ignore lint/complexity/noForEach: <explanation>
-// Load all routes with error handling
-modulerRoutes.forEach(({ path, route }) => {
-  console.log(`Mounting route: ${path}`); // Debug logging
-  routes.use(path, route);
-});
+routes.use("/user", userRoutes);
+routes.use("/auth", authRoutes);
+
 export default routes;
