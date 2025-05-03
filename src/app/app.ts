@@ -13,6 +13,9 @@ app.set("views", path.join(__dirname, "..", "views"));
 app.use(express.json());
 app.use(middleware);
 app.use("/api/v1", routes);
+app.get("*", (req, res) => {
+  res.send("Server is running");
+});
 app.use(notFoundHandler);
 app.use(errorHandler);
 

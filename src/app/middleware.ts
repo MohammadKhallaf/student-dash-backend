@@ -3,7 +3,9 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import cors from "cors";
 import session from "express-session";
-import { corsOrigin } from "../config";
+import { corsOrigin, mongoUrl } from "../config";
+import MongoStore from "connect-mongo";
+
 const middleware = [
   morgan("dev"),
   cors({
@@ -13,15 +15,15 @@ const middleware = [
   express.static("docs"),
   express.json({ limit: "50mb" }),
   urlencoded({ extended: true }),
-
   session({
-    secret: "hello", // Replace with a strong secret in production
+    secret: process.env.SESSION_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // Set secure cookies in production
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    },
+    store: MongoStore.create({
+      mongoUrl,
+      ttl: 14 * 24 * 60 * 60, // 14 days
+    }),
+    cookie: { secure: process.env.NODE_ENV === "production" },
   }),
 ];
 export default middleware;
