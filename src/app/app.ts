@@ -17,9 +17,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(middleware);
 app.use("/api/v1", routes);
-app.get("*", (req, res) => {
-  res.send("Server is running");
-});
+
 app.use(notFoundHandler);
 app.use(errorHandler);
 
