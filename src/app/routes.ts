@@ -22,7 +22,7 @@ routes.get("/health", (_req: Request, res: Response, next: NextFunction) => {
 
 console.log("Validating routes...");
 
-routes.use("/user", userRoutes);
-routes.use("/auth", authRoutes);
+// routes.use("/user", userRoutes);
+// routes.use("/auth", authRoutes);
 
 export default routes;
