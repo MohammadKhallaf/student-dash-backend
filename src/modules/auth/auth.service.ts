@@ -10,7 +10,7 @@ import {
 import { CustomError } from "../../errors/CustomError";
 import { sendMail } from "../../utils/emailSender";
 import { genarateToken } from "../../utils/genarateToken";
-import type { IUser } from "../user/user.interface";
+import type { IUser, IUserMethod } from "../user/user.interface";
 import { User } from "../user/user.model";
 import type { ILogin, TJwtPayload } from "./auth.interface";
 import { activationCode } from "./auth.utils";
@@ -57,19 +57,23 @@ export const loginService = async (payload: ILogin) => {
   if (!user) {
     throw new CustomError(404, "User not exists please create an account");
   }
+
   //   Check User Is Deleted Or not
   if (user.isDeleted) {
     throw new CustomError(httpStatus.FORBIDDEN, "Already Deleted User");
   }
-  //   check Passsword Is Valid or Not
 
-  const isPasswordValid = (user as any).comparePassword(payload.password);
+  //   check Passsword Is Valid or Not
+  const isPasswordValid = (user as IUserMethod).comparePassword(
+    payload.password
+  );
 
   if (!isPasswordValid) {
     throw new CustomError(httpStatus.FORBIDDEN, "Invalid UserID or Password");
   }
+
   const jwtPayload: TJwtPayload = {
-    userId: (user as any)._id,
+    userId: user._id,
     email: user.email,
     name: user.username,
     role: user.role,
@@ -90,8 +94,7 @@ export const loginService = async (payload: ILogin) => {
     refresh_token_expiry
   );
 
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-  const { password, ...rest } = user.toObject();
+  const { password: _, ...rest } = user.toObject();
   return {
     accessToken,
     refreshToken,
@@ -116,7 +119,7 @@ export const refreshTokenService = async (token: string) => {
   }
 
   const jwtPayload: TJwtPayload = {
-    userId: (user as any)._id,
+    userId: user._id,
     email: user.email,
     name: user.username,
     role: user.role,
@@ -140,7 +143,7 @@ export const forgetPasswordService = async (payload: Partial<IUser>) => {
     throw new CustomError(404, "User Not Found");
   }
   const jwtPayload: TJwtPayload = {
-    userId: (user as any)._id,
+    userId: user._id,
     email: user.email,
     name: user.username,
     role: user.role,
@@ -191,11 +194,11 @@ export const changePasswordService = async (
 
   //   check Passsword Is Valid or Not
 
-  const isPasswordValid = (user as any).comparePassword(payload.oldPassword);
+  const isPasswordValid = user.comparePassword(payload.oldPassword);
 
   if (!isPasswordValid) {
     throw new CustomError(httpStatus.FORBIDDEN, "Invalid UserID or Password");
   }
 
-  await User.updatePassword((user as any).email as string, payload);
+  await User.updatePassword(user.email as string, payload);
 };

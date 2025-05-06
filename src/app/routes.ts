@@ -4,7 +4,6 @@ import {
   type Response,
   Router,
 } from "express";
-import { modulerRoutes } from "../routes";
 import { userRoutes } from "../modules/user/user.routes";
 import { authRoutes } from "../modules/auth/auth.routes";
 const routes = Router();
@@ -19,8 +18,6 @@ routes.get("/health", (_req: Request, res: Response, next: NextFunction) => {
     next(error);
   }
 });
-
-console.log("Validating routes...");
 
 routes.use("/user", userRoutes);
 routes.use("/auth", authRoutes);

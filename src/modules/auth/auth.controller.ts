@@ -25,73 +25,18 @@ import {
   resetPasswordPasswordService,
 } from "./auth.service";
 
-// export const googleLoginCallbackController = (req: Request, res: any) => {
-//   // if (!req.user) {
-//   //   return res.status(500).json({
-//   //     status: 500,
-//   //     success: false,
-//   //     message: 'User not found',
-//   //   });
-//   // }
-//   // const { accessToken, refreshToken } = req?.user as any;
-//   // console.log(accessToken,refreshToken);
-
-//   // res.cookie('refreshToken', refreshToken, {
-//   //   secure: NODE_ENV === 'production',
-//   //   httpOnly: true,
-//   // });
-//   // res.cookie('accessToken', accessToken, {
-//   //   secure: NODE_ENV === 'production',
-//   //   httpOnly: true,
-//   // });
-
-//   // Redirect to a secure page or dashboard after successful login
-//   // res.redirect('/dashboard');
-// };
-
-export const createUserController: RequestHandler = catchAsync(
+export const registerUserController: RequestHandler = catchAsync(
   async (req, res) => {
     const payload: IUser = req.body;
 
-    const { token } = await prepareForActivateService(payload);
-    sendResponse(res, {
-      status: httpStatus.CREATED,
-      success: true,
-      message: "Please Check Your Email To Activate your Account",
-      token,
-    });
-  }
-);
-
-export const activateAccountController: RequestHandler = catchAsync(
-  async (req, res) => {
-    const { code, activationToken } = req.body;
-    const newUser = jwt.verify(
-      activationToken,
-      access_token as string
-    ) as JwtPayload;
-
-    if (!newUser) {
-      throw new CustomError(404, "User Not Found");
-    }
-    if (newUser.code.toString() !== code.toString()) {
-      throw new CustomError(httpStatus.UNAUTHORIZED, "Invalid Code");
-    }
-    const formated: IUser = Object.keys(newUser).reduce((obj: any, key) => {
-      if (key !== "iat" && key !== "exp" && key !== "code") {
-        obj[key] = newUser[key];
-      }
-      return obj;
-    }, {} as IUser);
-
-    const { result, token }: any = await createUserService(formated);
+    const { result, token } = await createUserService(payload);
 
     sendResponse(res, {
       status: httpStatus.CREATED,
       success: true,
-      message: "Account activated successfully",
+      message: "Account created successfully",
       data: result,
-      token: token,
+      accessToken: token,
     });
   }
 );
@@ -106,15 +51,17 @@ export const loginController: RequestHandler = catchAsync(async (req, res) => {
   const payload: ILogin = req.body;
   const { refreshToken, accessToken, rest } = await loginService(payload);
 
-  res.cookie("refreshToken", refreshToken, {
-    secure: NODE_ENV === "production",
-    httpOnly: true,
-  });
+  // res.cookie("refreshToken", refreshToken, {
+  //   secure: NODE_ENV === "production",
+  //   httpOnly: true,
+  // });
+
   sendResponse(res, {
     status: httpStatus.OK,
     success: true,
     message: "logged in successfully",
-    token: accessToken,
+    accessToken,
+    refreshToken,
     data: rest,
   });
 });
@@ -127,7 +74,8 @@ export const refreshController: RequestHandler = catchAsync(
       status: httpStatus.OK,
       success: true,
       message: "Access token is retrieved succesfully!",
-      token: result,
+      accessToken: result,
+      refreshToken,
     });
   }
 );
@@ -144,7 +92,7 @@ export const forgetPasswordController: RequestHandler = catchAsync(
       status: httpStatus.OK,
       success: true,
       message: "Please Check Your Email To Reset Your Password",
-      token,
+      accessToken: token,
     });
   }
 );
@@ -157,13 +105,13 @@ export const resetPasswordController: RequestHandler = catchAsync(
       status: httpStatus.OK,
       success: true,
       message: "password Reset Successfully",
-      token,
+      accessToken: token,
     });
   }
 );
 export const changePasswordController: RequestHandler = catchAsync(
   async (req, res) => {
-    const user: any = req.user;
+    const user = req.user;
     await changePasswordService(user, req.body);
 
     sendResponse(res, {

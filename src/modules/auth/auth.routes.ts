@@ -1,21 +1,16 @@
 import { Router } from "express";
+import auth from "../../middlewares/auth";
 import { requestValidator } from "../../middlewares/requestValidator";
 import {
-  activateUserValidation,
-  createUserValidation,
-  loginValidation,
-} from "./auth.validaton";
-import {
-  activateAccountController,
   changePasswordController,
-  createUserController,
   forgetPasswordController,
   loginController,
   logoutController,
   refreshController,
+  registerUserController,
   resetPasswordController,
 } from "./auth.controller";
-import auth from "../../middlewares/auth";
+import { createUserValidation, loginValidation } from "./auth.validaton";
 
 export const authRoutes: Router = Router();
 
@@ -23,13 +18,9 @@ export const authRoutes: Router = Router();
 authRoutes.post(
   "/signup",
   requestValidator(createUserValidation),
-  createUserController
+  registerUserController
 );
-authRoutes.post(
-  "/activate",
-  requestValidator(activateUserValidation),
-  activateAccountController
-);
+
 authRoutes.post("/login", requestValidator(loginValidation), loginController);
 // authRoutes.get(
 //   '/me',

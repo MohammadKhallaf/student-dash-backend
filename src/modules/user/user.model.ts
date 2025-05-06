@@ -3,6 +3,8 @@ import type { IUser, IUserModel } from "./user.interface";
 import { saltRound } from "../../config";
 import bcrypt from "bcrypt";
 
+// student , advisor , admin, sponsor
+
 const userSchema = new Schema<IUser, IUserModel>(
   {
     name: {
@@ -30,16 +32,19 @@ const userSchema = new Schema<IUser, IUserModel>(
       type: String,
       required: [true, "Role is required"],
       enum: {
-        values: ["user", "admin"],
-        message: "Role must be either user or admin",
+        values: ["student", "advisor", "admin", "sponsor"],
+        message: "Role must be from the ENUM",
       },
       default: "user",
     },
   },
   {
     timestamps: true,
+    // createdAt
+    // updatedAt
   }
 );
+
 userSchema.pre("save", async function (next) {
   // eslint-disable-next-line @typescript-eslint/no-this-alias
   // biome-ignore lint/complexity/noUselessThisAlias: <explanation>
@@ -49,6 +54,10 @@ userSchema.pre("save", async function (next) {
   }
   next();
 });
+
+userSchema.methods.comparePassword = function (password: string) {
+  return bcrypt.compareSync(password, this.password);
+};
 
 userSchema.pre("find", function (next) {
   this.find({ isDeleted: { $ne: true } });
@@ -72,6 +81,7 @@ userSchema.statics.isUserExists = async function (payload) {
   });
   return existingUser;
 };
+
 userSchema.statics.updatePassword = async function (
   email: string,
   payload: Partial<IUser>
@@ -80,12 +90,11 @@ userSchema.statics.updatePassword = async function (
   if (!user) {
     throw new Error("User not found");
   }
-  (user as any).password = payload.password;
+  user.password = payload.password;
   await user.save();
 };
-userSchema.methods.comparePassword = function (password: string) {
-  return bcrypt.compareSync(password, this.password);
-};
+
+// TODO: remove this hook
 // biome-ignore lint/complexity/useArrowFunction: <explanation>
 userSchema.post("save", function (doc, next) {
   doc.password = "";
